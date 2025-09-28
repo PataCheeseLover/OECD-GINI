@@ -5,6 +5,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.model_selection import cross_val_score
 
 idd = pd.read_csv('data/IDD.csv')
 health = pd.read_csv('data/health.csv')
@@ -29,13 +30,13 @@ features = ['OBS_VALUE_x', 'OBS_VALUE_y', 'OBS_VALUE', 'LABOUR_FORCE_STATUS']
 df = df[features]
 X = df.drop(columns=['OBS_VALUE_x'])
 y = df['OBS_VALUE_x']
-X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2, random_state=0)
+#X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2, random_state=0)
 
 
 preprocessor = ColumnTransformer(transformers = [('num', SimpleImputer(strategy='mean'), ['OBS_VALUE', 'OBS_VALUE_y']), ('cat', OneHotEncoder(handle_unknown='ignore'), ['LABOUR_FORCE_STATUS'])])
 
 reg = Pipeline(steps=[('preprocessor', preprocessor), ('regressor', LinearRegression())])
 
-reg.fit(X_train, y_train)
+scores = -1 * cross_val_score(reg, X, y, cv = 5, scoring='r2')
 
-print(f"Model R^2: {reg.score(X_valid, y_valid)}")
+print(f"Model R^2: {scores.mean()}")
