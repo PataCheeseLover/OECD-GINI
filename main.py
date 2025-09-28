@@ -29,14 +29,12 @@ features = ['OBS_VALUE_x', 'OBS_VALUE_y', 'OBS_VALUE', 'LABOUR_FORCE_STATUS']
 df = df[features]
 X = df.drop(columns=['OBS_VALUE_x'])
 y = df['OBS_VALUE_x']
-
+X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2, random_state=0)
 
 
 preprocessor = ColumnTransformer(transformers = [('num', SimpleImputer(strategy='mean'), ['OBS_VALUE', 'OBS_VALUE_y']), ('cat', OneHotEncoder(handle_unknown='ignore'), ['LABOUR_FORCE_STATUS'])])
 
 reg = Pipeline(steps=[('preprocessor', preprocessor), ('regressor', LinearRegression())])
-
-X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2, random_state=0)
 
 reg.fit(X_train, y_train)
 
