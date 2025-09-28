@@ -1,11 +1,11 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
+from xgboost import XGBRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import cross_val_score
+import numpy as np
 
 idd = pd.read_csv('data/IDD.csv')
 health = pd.read_csv('data/health.csv')
@@ -30,13 +30,12 @@ features = ['OBS_VALUE_x', 'OBS_VALUE_y', 'OBS_VALUE', 'LABOUR_FORCE_STATUS']
 df = df[features]
 X = df.drop(columns=['OBS_VALUE_x'])
 y = df['OBS_VALUE_x']
-#X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2, random_state=0)
 
 
 preprocessor = ColumnTransformer(transformers = [('num', SimpleImputer(strategy='mean'), ['OBS_VALUE', 'OBS_VALUE_y']), ('cat', OneHotEncoder(handle_unknown='ignore'), ['LABOUR_FORCE_STATUS'])])
 
-reg = Pipeline(steps=[('preprocessor', preprocessor), ('regressor', LinearRegression())])
+reg = Pipeline(steps=[('preprocessor', preprocessor), ('regressor', XGBRegressor(n_estimators=1000, learning_rate=0.05))])
 
-scores = -1 * cross_val_score(reg, X, y, cv = 5, scoring='r2')
+scores = cross_val_score(reg, X, y, cv = 5, scoring='neg_mean_squared_error')
 
-print(f"Model R^2: {scores.mean()}")
+print(f"Model RMSE: {np.sqrt(-scores.mean())}")
